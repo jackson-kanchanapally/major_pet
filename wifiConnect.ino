@@ -177,7 +177,7 @@ void setupAP(void)
   }
   st += "</ol>";
   delay(100);
-  WiFi.softAP("techiesms", "");
+  WiFi.softAP("Batch-4 Safe Paws", "");
   Serial.println("softap");
   launchWeb();
   Serial.println("over");
