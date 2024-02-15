@@ -3,34 +3,7 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
 #include <EEPROM.h>
-#include "DHT.h"
-#define DHTPIN D1
-#define DHTTYPE DHT11
-#define RAIN_SENSOR_PIN D3
 
-#include <Firebase_ESP_Client.h>
-
-DHT dht(DHTPIN, DHTTYPE);
-
-//Provide the token generation process info.
-#include "addons/TokenHelper.h"
-//Provide the RTDB payload printing info and other helper functions.
-#include "addons/RTDBHelper.h"
-
-#define API_KEY "AIzaSyALcg6utMHov-wQwTfgqzUTSetnbd9AKFM"
-
-// Insert RTDB URLefine the RTDB URL */
-#define DATABASE_URL "https://major-757a9-default-rtdb.firebaseio.com/" 
-
-//Define Firebase Data object
-FirebaseData fbdo;
-
-FirebaseAuth auth;
-FirebaseConfig config;
-
-//unsigned long sendDataPrevMillis = 0;
-//int count = 0;
-bool signupOK = false;
 //Variables
 int i = 0;
 int statusCode;
@@ -50,9 +23,7 @@ ESP8266WebServer server(80);
 
 void setup()
 {
-pinMode(DHTPIN, INPUT);
-  pinMode(RAIN_SENSOR_PIN, INPUT);
-  dht.begin();
+
   Serial.begin(9600); //Initialising if(DEBUG)Serial Monitor
   Serial.println();
   Serial.println("Disconnecting previously connected WiFi");
@@ -90,24 +61,6 @@ pinMode(DHTPIN, INPUT);
   if (testWifi())
   {
     Serial.println("Succesfully Connected!!!");
-     /* Assign the api key (required) */
-  config.api_key = API_KEY;
-
-  /* Assign the RTDB URL (required) */
-  config.database_url = DATABASE_URL;
-   if (Firebase.signUp(&config, &auth, "", "")){
-    Serial.println("ok");
-    signupOK = true;
-  }
-  else{
-    Serial.printf("%s\n", config.signer.signupError.message.c_str());
-  }
-
-  /* Assign the callback function for the long running token generation task */
-  config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
-  
-  Firebase.begin(&config, &auth);
-  Firebase.reconnectWiFi(true);
     return;
   }
   else
@@ -126,10 +79,9 @@ pinMode(DHTPIN, INPUT);
     delay(100);
     server.handleClient();
   }
- 
+
 }
 void loop() {
-  delay(1000);
   if ((WiFi.status() == WL_CONNECTED))
   {
 
@@ -140,34 +92,7 @@ void loop() {
       digitalWrite(LED_BUILTIN, LOW);
       delay(1000);
     }
-   
-  
-// float h = dht.readHumidity();
-int sensorValue = digitalRead(RAIN_SENSOR_PIN);
-  float t = dht.readTemperature();
-  float ft=(t*9/5)+32;
-  if (Firebase.ready() && signupOK ) {
-    
-    if (Firebase.RTDB.setString(&fbdo, "DHT/water", String(sensorValue))){
-       Serial.print("Water Detect: ");
-       Serial.println(sensorValue);
-    }
-    else {
-      Serial.println("FAILED");
-      Serial.println("REASON: " + fbdo.errorReason());
-    }
-    
-    // Write a Float number on the database path test/float
-    if (Firebase.RTDB.setString(&fbdo, "DHT/temperature", String(ft))){
-       Serial.print("Temperature: ");
-       Serial.println(ft);
-    }
-    else {
-      Serial.println("FAILED");
-      Serial.println("REASON: " + fbdo.errorReason());
-    }
-  }
-  Serial.println("______________________________");
+
   }
   else
   {
